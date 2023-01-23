@@ -1,15 +1,17 @@
 package com.nttdata.bootcamp.movement.service.Impl;
 
-import com.nttdata.bootcamp.movement.entity.Customer;
-import com.nttdata.bootcamp.movement.entity.dto.BusinessCustomerDto;
-import com.nttdata.bootcamp.movement.entity.dto.PersonalCustomerDto;
+import com.nttdata.bootcamp.movement.entity.Movement;
+import com.nttdata.bootcamp.movement.entity.dto.CurrentAccountDto;
+import com.nttdata.bootcamp.movement.entity.dto.FixedTermDto;
+import com.nttdata.bootcamp.movement.entity.dto.SavingAccountDto;
 import com.nttdata.bootcamp.movement.repository.MovementRepository;
 import com.nttdata.bootcamp.movement.service.MovementService;
-import com.nttdata.bootcamp.movement.util.Constant;
 import lombok.AllArgsConstructor;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -22,103 +24,98 @@ public class MovementServiceImpl implements MovementService {
     @Autowired
     private MovementRepository movementRepository;
 
+    @Autowired
+    private WebClient webClient;
+
+    //public MovementServiceImpl(MovementRepository movementRepository, WebClient.Builder webClient,@Value("${passive}") String passiveUrl) {
+    public MovementServiceImpl(MovementRepository movementRepository, WebClient.Builder webClient, String passiveUrl) {
+        this.movementRepository = movementRepository;
+        this.webClient = webClient.baseUrl(passiveUrl).build();
+    }
+
+    private Mono<CurrentAccountDto> findCurrentAccountByDni(String dni, String account){
+        return webClient.get().uri("/currentAccount/dni/" + dni + "/account/"+account).
+                retrieve().bodyToMono(CurrentAccountDto.class);
+    }
+    private Mono<SavingAccountDto> findSavingAccountByDni(String dni, String account){
+        return webClient.get().uri("/savingAccount/dni/" + dni + "/account/"+account).
+                retrieve().bodyToMono(SavingAccountDto.class);
+    }
+    private Mono<FixedTermDto> findFixedTermAccountByDni(String dni, String account){
+        return webClient.get().uri("/fixedTermAccount/dni/" + dni + "/account/"+account).
+                retrieve().bodyToMono(FixedTermDto.class);
+    }
+
+    private Mono<CurrentAccountDto> updateCurrentAccount(CurrentAccountDto currentAccount){
+        return webClient.put().uri("/currentAccount/" + currentAccount.getId()).
+                body(Mono.just(currentAccount), CurrentAccountDto.class)
+                .retrieve()
+                .bodyToMono(CurrentAccountDto.class);
+    }
+    private Mono<SavingAccountDto> updateSavingAccount(SavingAccountDto savingAccount){
+        return webClient.put().uri("/savingAccount/" + savingAccount.getId()).
+                body(Mono.just(savingAccount), SavingAccountDto.class)
+                .retrieve()
+                .bodyToMono(SavingAccountDto.class);
+    }
+    private Mono<FixedTermDto> updateFixedTermAccount(FixedTermDto fixedTermAccount){
+        return webClient.put().uri("/fixedTermAccount/" + fixedTermAccount.getId()).
+                body(Mono.just(fixedTermAccount), FixedTermDto.class)
+                .retrieve()
+                .bodyToMono(FixedTermDto.class);
+    }
+
     @Override
-    public Flux<Customer> findAllCustomers() {
-        log.info("Searching for all customers");
+    public Flux<Movement> findAll() {
         return movementRepository.findAll();
     }
 
     @Override
-    public Mono<Customer> findCustomerByDni(String dni) {
-        log.info("Searching for customer with DNI: " + dni);
-        return movementRepository.findAll()
-                .filter(x -> x.getDni().equals(dni))
-                .next();
+    public Mono<Movement> saveTransactionOfCurrentAccount(Movement transaction) {
+        Mono<CurrentAccountDto> account= findCurrentAccountByDni(transaction.getDni(), transaction.getAccountNumber()).flatMap(x->{
+            x.setBalance(x.getBalance().add(transaction.getAmount().negate()));
+            return updateCurrentAccount(x);
+        });
+        return account.then(movementRepository.save(transaction));
     }
 
     @Override
-    public Mono<Customer> savePersonalCustomer(PersonalCustomerDto dataCustomer) {
-        return findCustomerByDni(dataCustomer.getDni())
-                .hasElement()
-                .flatMap(dniExists -> {
-                    if (dniExists) {
-                        log.info("There is already a customer with that DNI");
-                        return Mono.empty();
-                    } else {
-                        log.info("Saving for personal customer with DNI: " + dataCustomer.getDni());
-
-                        Customer p = new Customer();
-                        p.setDni(dataCustomer.getDni());
-                        p.setTypeCustomer(Constant.PERSONAL_CUSTOMER);
-                        p.setFlagVip(false);
-                        p.setFlagPyme(false);
-                        p.setName(dataCustomer.getName());
-                        p.setSurName(dataCustomer.getSurName());
-                        p.setAddress(dataCustomer.getAddress());
-                        p.setStatus(Constant.CUSTOMER_ACTIVE);
-                        p.setCreationDate(new Date());
-                        p.setModificationDate(new Date());
-                        return movementRepository.save(p);
-                    }
-                });
+    public Mono<Movement> saveTransactionOfSavingAccount(Movement transaction) {
+        Mono<SavingAccountDto> account= findSavingAccountByDni(transaction.getDni(), transaction.getAccountNumber()).flatMap(x->{
+            x.setBalance(x.getBalance().add(transaction.getAmount().negate()));
+            return updateSavingAccount(x);
+        });
+        return account.then(movementRepository.save(transaction));
     }
 
     @Override
-    public Mono<Customer> saveBusinessCustomer(BusinessCustomerDto dataCustomer) {
-        return findCustomerByDni(dataCustomer.getDni())
-                .hasElement()
-                .flatMap(dniExists -> {
-                    if (dniExists) {
-                        log.info("There is already a customer with that DNI");
-                        return Mono.empty();
-                    } else {
-                        log.info("Saving for business customer with DNI: " + dataCustomer.getDni());
-
-                        Customer b = new Customer();
-                        b.setDni(dataCustomer.getDni());
-                        b.setTypeCustomer(Constant.BUSINESS_CUSTOMER);
-                        b.setFlagPyme(false);
-                        b.setFlagVip(false);
-                        b.setName(dataCustomer.getName());
-                        b.setSurName(dataCustomer.getSurName());
-                        b.setAddress(dataCustomer.getAddress());
-                        b.setStatus(Constant.CUSTOMER_ACTIVE);
-                        b.setCreationDate(new Date());
-                        b.setModificationDate(new Date());
-                        return movementRepository.save(b);
-                    }
-                });
+    public Mono<Movement> saveTransactionOfFixedTermAccount(Movement transaction) {
+        Mono<FixedTermDto> account= findFixedTermAccountByDni(transaction.getDni(), transaction.getAccountNumber()).flatMap(x->{
+            x.setBalance(x.getBalance().add(transaction.getAmount().negate()));
+            return updateFixedTermAccount(x);
+        });
+        return account.then(movementRepository.save(transaction));
     }
 
     @Override
-    public Mono<Customer> updateCustomerStatus(Customer dataCustomer) {
-        return findCustomerByDni(dataCustomer.getDni())
-                .flatMap(updCust -> {
-                    log.info("Updating for {} customer with DNI: {}", updCust.getTypeCustomer(), updCust.getDni());
-
-                    updCust.setStatus(dataCustomer.getStatus());
-                    updCust.setModificationDate(new Date());
-                    return movementRepository.save(updCust);
-                });
+    public Mono<Movement> findById(String id) {
+        return movementRepository.findById(id);
     }
 
     @Override
-    public Mono<Customer> updateCustomerAddress(Customer dataCustomer) {
-        return findCustomerByDni(dataCustomer.getDni())
-                .flatMap(updCust -> {
-                    log.info("Updating address '{}' to '{}'", updCust.getAddress(), dataCustomer.getAddress());
-
-                    updCust.setAddress(dataCustomer.getAddress());
-                    updCust.setModificationDate(new Date());
-                    return movementRepository.save(updCust);
-                });
+    public Mono<Movement> update(Movement transaction, String id) {
+        return movementRepository.findById(id).flatMap(x->{
+            x.setAmount(transaction.getAmount());
+            x.setCurrency(transaction.getCurrency());
+            x.setAccountNumber(transaction.getAccountNumber());
+            x.setCvc(transaction.getCvc());
+            return movementRepository.save(x);
+        });
     }
 
     @Override
-    public Mono<Customer> deleteCustomer(String dni) {
-        log.info("Deleting client by DNI: " + dni);
-        return findCustomerByDni(dni)
-                .flatMap(customer -> movementRepository.delete(customer).then(Mono.just(customer)));
+    public Mono<Void> delete(String id) {
+        return movementRepository.deleteById(id);
     }
 
 }

@@ -1,26 +1,24 @@
 package com.nttdata.bootcamp.movement.service;
 
-import com.nttdata.bootcamp.movement.entity.Customer;
-import com.nttdata.bootcamp.movement.entity.dto.BusinessCustomerDto;
-import com.nttdata.bootcamp.movement.entity.dto.PersonalCustomerDto;
+import com.nttdata.bootcamp.movement.entity.Movement;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 //Interface Service
 public interface MovementService {
 
-    Flux<Customer> findAllCustomers();
+    Flux<Movement> findAll();
 
-    Mono<Customer> findCustomerByDni(String dni);
+    Mono<Movement> saveTransactionOfCurrentAccount(Movement movement);
 
-    Mono<Customer> savePersonalCustomer(PersonalCustomerDto dataCustomer);
+    Mono<Movement> saveTransactionOfSavingAccount(Movement movement);
 
-    Mono<Customer> saveBusinessCustomer(BusinessCustomerDto dataCustomer);
+    Mono<Movement> saveTransactionOfFixedTermAccount(Movement movement);
 
-    Mono<Customer> updateCustomerStatus(Customer dataCustomer);
+    Mono<Movement> findById(String id);
 
-    Mono<Customer> updateCustomerAddress(Customer dataCustomer);
+    Mono<Movement> update(Movement movement, String id);
 
-    Mono<Customer> deleteCustomer(String dni);
+    Mono<Void> delete(String id);
 
 }

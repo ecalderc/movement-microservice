@@ -11,7 +11,7 @@
 	<groupId>com.nttdata.bootcamp</groupId>
 	<artifactId>movement-microservice</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>customer</name>
+	<name>movement</name>
 	<description>Movement Microservice</description>
 	<properties>
 		<java.version>17</java.version>

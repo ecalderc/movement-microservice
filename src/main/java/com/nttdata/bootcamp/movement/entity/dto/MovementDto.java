@@ -1,8 +1,6 @@
 package com.nttdata.bootcamp.movement.entity.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,19 +8,19 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BusinessCustomerDto {
+public class MovementDto {
 
     @NotNull
     @Size(min = 8, max = 8)
     private String dni;
 
     @NotBlank
-    private String name;
+    private String accountNumber;
 
     @NotBlank
-    private String surName;
+    private String movementNumber;
 
-    @NotBlank
-    private String address;
+    @Min(0)
+    private double amount;
 
 }
