@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: movement
+  cloud:
+    config:
+      enabled: true
+      label: main
+      uri: http://localhost:8888

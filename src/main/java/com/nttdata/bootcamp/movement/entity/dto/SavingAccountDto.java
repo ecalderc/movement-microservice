@@ -1,9 +1,8 @@
 package com.nttdata.bootcamp.movement.entity.dto;
 
 import com.nttdata.bootcamp.movement.entity.enums.TypeCurrency;
-import lombok.Data;
-
 import java.math.BigDecimal;
+import lombok.Data;
 
 @Data
 public class SavingAccountDto {
