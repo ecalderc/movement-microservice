@@ -7,18 +7,18 @@ import reactor.core.publisher.Mono;
 //Interface Service
 public interface MovementService {
 
-    Flux<Movement> findAll();
+    public Flux<Movement> findAll();
 
-    Mono<Movement> saveTransactionOfCurrentAccount(Movement movement);
+    public Flux<Movement> findByAccountNumber(String accountNumber);
 
-    Mono<Movement> saveTransactionOfSavingAccount(Movement movement);
+    public Mono<Movement> findByNumber(String number);
 
-    Mono<Movement> saveTransactionOfFixedTermAccount(Movement movement);
+    public Flux<Movement> findCommissionByAccountNumber(String accountNumber);
 
-    Mono<Movement> findById(String id);
+    public Mono<Movement> saveMovement(Movement movement);
 
-    Mono<Movement> update(Movement movement, String id);
+    public Mono<Movement> updateMovement(Movement movement);
 
-    Mono<Void> delete(String id);
+    public Mono<Void> deleteMovement(String accountNumber);
 
 }

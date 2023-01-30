@@ -2,8 +2,8 @@ package com.nttdata.bootcamp.movement.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.nttdata.bootcamp.movement.entity.enums.TypeCurrency;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+
 import java.math.BigDecimal;
 import java.util.Date;
 import lombok.AllArgsConstructor;
@@ -26,20 +26,29 @@ public class Movement {
     @Id
     private String id;
 
-    @Size(min = 16, max = 16)
-    private String accountNumber;
-
-    private BigDecimal amount;
-
-    @NotEmpty
+    @NotNull
     @Size(min = 8, max = 8)
     private String dni;
 
-    //@Enumerated(EnumType.STRING)
-    private TypeCurrency currency;
+    @NotBlank
+    private String accountNumber;
 
-    @Range(min = 100, max = 999)
-    private Integer cvc;
+    @NotBlank
+    private String typeTransaction;
+
+    @NotBlank
+    private String movementNumber;
+
+    @NotNull
+    @DecimalMin(value = "0")
+    private Double amount;
+
+    @NotBlank
+    private String status;
+
+    @NotNull
+    @DecimalMin(value = "0")
+    private Double commission;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     @CreatedDate
