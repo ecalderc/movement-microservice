@@ -3,7 +3,4 @@ spring:
     name: movement
   cloud:
     config:
-      enabled: true
-      label: main
-      #uri: http://localhost:8888
-      uri: http://host.docker.internal:8888
+      import: config-server:http://localhost:8888
