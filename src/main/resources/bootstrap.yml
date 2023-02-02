@@ -1,6 +1,8 @@
 spring:
   application:
     name: movement
+  config:
+    import: "optional:configserver:https://config-server-ecalderc.azurewebsites.net"
   cloud:
     config:
-      import: config-server:http://localhost:8888
+      uri: ${CONFIG_URI:http://localhost:8888}
