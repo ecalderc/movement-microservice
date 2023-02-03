@@ -5,4 +5,6 @@ spring:
     import: "optional:configserver:https://config-server-ecalderc.azurewebsites.net"
   cloud:
     config:
-      uri: ${CONFIG_URI:http://localhost:8888}
+      enabled: true
+      uri: http://localhost:8888
+      profile: dev
