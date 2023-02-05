@@ -1,10 +1,12 @@
 spring:
   application:
     name: movement
-  config:
-    import: "optional:configserver:https://config-server-ecalderc.azurewebsites.net"
+  profiles:
+    active: dev
   cloud:
     config:
       enabled: true
-      uri: http://localhost:8888
-      profile: dev
+      uri:
+        - https://config-server-ecalderc.azurewebsites.net
+        - http://localhost:8888
+      fail-fast: true
