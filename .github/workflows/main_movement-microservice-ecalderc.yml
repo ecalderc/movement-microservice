@@ -31,7 +31,7 @@ jobs:
       with:
         push: true
         tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_ef7a0dfbff644ec496ef61bb8913951a }}/movement-microservice:${{ github.sha }}
-        file: ./Dockerfile
+        file: /.github/Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
