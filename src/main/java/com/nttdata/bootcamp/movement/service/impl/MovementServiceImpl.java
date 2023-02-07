@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Date;
+
 
 @Slf4j
 @AllArgsConstructor
@@ -41,34 +43,43 @@ public class MovementServiceImpl implements MovementService {
 
     @Override
     public Flux<Movement> findCommissionByAccountNumber(String accountNumber) {
-        Flux<Movement> movementsFlux = movementRepository
-                .findAll()
+        return movementRepository.findAll()
                 .filter(x -> x.getAccountNumber().equals(accountNumber) && x.getCommission() > 0);
-        return movementsFlux;
     }
 
     public Mono<Movement> saveMovement(Movement dataMovement) {
-        dataMovement.setStatus("active");
-        return movementRepository.save(dataMovement);
+        log.info("Saving movement");
 
+        Movement m = new Movement();
+        m.setStatus("active");
+        m.setCreationDate(new Date());
+        m.setModificationDate(new Date());
+        m.setTypeTransaction("Transfer");
+        return movementRepository.save(m);
     }
 
     @Override
-    public Mono<Movement> updateMovement(Movement dataMovement) {
+    public Mono<Movement> updateMovements(Movement dataMovement) {
+        return findByMovementNumber(dataMovement.getMovementNumber())
+                .flatMap(updMov -> {
+                    log.info("Updating number of movements");
 
-        Mono<Movement> transactionMono = findByMovementNumber(dataMovement.getMovementNumber());
-        try {
-            dataMovement.setDni(transactionMono.block().getDni());
-            dataMovement.setAmount(transactionMono.block().getAmount());
-            dataMovement.setAccountNumber(transactionMono.block().getAccountNumber());
-            dataMovement.setMovementNumber(transactionMono.block().getMovementNumber());
-            dataMovement.setTypeTransaction(transactionMono.block().getTypeTransaction());
-            dataMovement.setStatus(transactionMono.block().getStatus());
-            dataMovement.setCreationDate(transactionMono.block().getCreationDate());
-            return movementRepository.save(dataMovement);
-        } catch (Exception e) {
-            return Mono.<Movement>error(new Error("The movement " + dataMovement.getMovementNumber() + " do not exists"));
-        }
+                    updMov.setMovementNumber(dataMovement.getMovementNumber());
+                    updMov.setModificationDate(new Date());
+                    return movementRepository.save(updMov);
+                });
+    }
+
+    @Override
+    public Mono<Movement> updateCommission(Movement dataMovement) {
+        return findByMovementNumber(dataMovement.getMovementNumber())
+                .flatMap(updMov -> {
+                    log.info("Updating commission");
+
+                    updMov.setMovementNumber(dataMovement.getCommission().toString());
+                    updMov.setModificationDate(new Date());
+                    return movementRepository.save(updMov);
+                });
     }
 
     @Override

@@ -17,7 +17,9 @@ public interface MovementService {
 
     public Mono<Movement> saveMovement(Movement movement);
 
-    public Mono<Movement> updateMovement(Movement movement);
+    public Mono<Movement> updateMovements(Movement movement);
+
+    public Mono<Movement> updateCommission(Movement movement);
 
     public Mono<Movement> deleteMovement(String accountNumber);
 
