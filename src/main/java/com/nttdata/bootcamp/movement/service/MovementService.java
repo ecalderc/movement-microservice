@@ -11,7 +11,7 @@ public interface MovementService {
 
     public Flux<Movement> findByAccountNumber(String accountNumber);
 
-    public Mono<Movement> findByNumber(String number);
+    public Mono<Movement> findByMovementNumber(String movementNumber);
 
     public Flux<Movement> findCommissionByAccountNumber(String accountNumber);
 
@@ -19,6 +19,6 @@ public interface MovementService {
 
     public Mono<Movement> updateMovement(Movement movement);
 
-    public Mono<Void> deleteMovement(String accountNumber);
+    public Mono<Movement> deleteMovement(String accountNumber);
 
 }

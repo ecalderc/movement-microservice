@@ -22,33 +22,27 @@ public class MovementController {
     private MovementService movementService;
 
     //Movement search
-    @GetMapping("/findAllMovements")
+    @GetMapping("/findAll")
     public Flux<Movement> findAllMovements() {
-        Flux<Movement> movementsFlux = movementService.findAll();
-        log.info("Registered movements: " + movementsFlux);
-        return movementsFlux;
+        return movementService.findAll();
     }
 
-    //Movement by AccountNumber
-    @GetMapping("/findAllMovementsByNumber/{accountNumber}")
+    //Find for movement by account number
+    @GetMapping("/findByAccountNumber/{accountNumber}")
     public Flux<Movement> findAllMovementsByNumber(@PathVariable("accountNumber") String accountNumber) {
-        Flux<Movement> movementsFlux = movementService.findByAccountNumber(accountNumber);
-        log.info("Registered movements of account number: " + accountNumber + "-" + movementsFlux);
-        return movementsFlux;
+        return movementService.findByAccountNumber(accountNumber);
     }
 
-    //Movement  by transactionNumber
+    //Find for movement by movement number
     @CircuitBreaker(name = "movement", fallbackMethod = "fallBackGetMovement")
     @GetMapping("/findByMovementNumber/{numberMovement}")
-    public Mono<Movement> findByMovementNumber(@PathVariable("numberMovement") String numberMovement) {
-        log.info("Searching Movement by number: " + numberMovement);
-        return movementService.findByNumber(numberMovement);
+    public Mono<Movement> findByMovementNumber(@PathVariable("movementNumber") String movementNumber) {
+        return movementService.findByMovementNumber(movementNumber);
     }
 
     @CircuitBreaker(name = "movement", fallbackMethod = "fallBackGetMovement")
     @PostMapping(value = "/updateCommission")
-    public Mono<Movement> updateCommission(@PathVariable("numberTransaction") String numberTransaction,
-                                           @PathVariable("commission") Double commission) {
+    public Mono<Movement> updateCommission(@PathVariable("numberTransaction") String numberTransaction, @PathVariable("commission") Double commission) {
         Mono<Movement> movementMono = findByMovementNumber(numberTransaction);
         movementMono.block().setCommission(commission);
         Mono<Movement> movementsMono = movementService.saveMovement(movementMono.block());
@@ -103,20 +97,15 @@ public class MovementController {
         return updateTransfer;
     }
 
-    //Delete Movement
+    //Delete movement
     @CircuitBreaker(name = "movement", fallbackMethod = "fallBackGetMovement")
-    @DeleteMapping("/deleteMovement/{numberMovement}")
-    public Mono<Void> deleteMovement(@PathVariable("numberTransaction") String numberMovement) {
-        log.info("Deleting Movement by number: " + numberMovement);
-        Mono<Void> delete = movementService.deleteMovement(numberMovement);
-        return delete;
-
+    @DeleteMapping("/delete/{numberMovement}")
+    public Mono<Movement> deleteMovement(@PathVariable("numberMovement") String numberMovement) {
+        return movementService.deleteMovement(numberMovement);
     }
 
-    private Mono<Movement> fallBackGetMovement(Exception e) {
-        Movement movement = new Movement();
-        Mono<Movement> movementsMono = Mono.just(movement);
-        return movementsMono;
+    private Mono<String> fallBackGetMovement(Exception e) {
+        return Mono.just("Movement Microservice is not responding");
     }
 
 }

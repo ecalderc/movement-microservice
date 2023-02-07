@@ -20,16 +20,23 @@ public class MovementServiceImpl implements MovementService {
 
     @Override
     public Flux<Movement> findAll() {
-        Flux<Movement> movementsFlux = movementRepository.findAll();
-        return movementsFlux;
+        log.info("Searching for all movements");
+        return movementRepository.findAll();
     }
 
     @Override
     public Flux<Movement> findByAccountNumber(String accountNumber) {
-        Flux<Movement> movementsFlux = movementRepository
-                .findAll()
+        log.info("Find for movement with account number: " + accountNumber);
+        return movementRepository.findAll()
                 .filter(x -> x.getAccountNumber().equals(accountNumber));
-        return movementsFlux;
+    }
+
+    @Override
+    public Mono<Movement> findByMovementNumber(String movementNumber) {
+        log.info("Find for movement with movement number: " + movementNumber);
+        return movementRepository.findAll()
+                .filter(x -> x.getMovementNumber().equals(movementNumber))
+                .next();
     }
 
     @Override
@@ -38,15 +45,6 @@ public class MovementServiceImpl implements MovementService {
                 .findAll()
                 .filter(x -> x.getAccountNumber().equals(accountNumber) && x.getCommission() > 0);
         return movementsFlux;
-    }
-
-    @Override
-    public Mono<Movement> findByNumber(String Number) {
-        Mono<Movement> movementsMono = movementRepository
-                .findAll()
-                .filter(x -> x.getMovementNumber().equals(Number))
-                .next();
-        return movementsMono;
     }
 
     public Mono<Movement> saveMovement(Movement dataMovement) {
@@ -58,7 +56,7 @@ public class MovementServiceImpl implements MovementService {
     @Override
     public Mono<Movement> updateMovement(Movement dataMovement) {
 
-        Mono<Movement> transactionMono = findByNumber(dataMovement.getMovementNumber());
+        Mono<Movement> transactionMono = findByMovementNumber(dataMovement.getMovementNumber());
         try {
             dataMovement.setDni(transactionMono.block().getDni());
             dataMovement.setAmount(transactionMono.block().getAmount());
@@ -74,14 +72,10 @@ public class MovementServiceImpl implements MovementService {
     }
 
     @Override
-    public Mono<Void> deleteMovement(String Number) {
-        Mono<Movement> movementsMono = findByNumber(Number);
-        try {
-            Movement movement = movementsMono.block();
-            return movementRepository.delete(movement);
-        } catch (Exception e) {
-            return Mono.<Void>error(new Error("The movement number" + Number + " do not exists"));
-        }
+    public Mono<Movement> deleteMovement(String number) {
+        log.info("Deleting movement by number: " + number);
+        return findByMovementNumber(number)
+                .flatMap(movement -> movementRepository.delete(movement).then(Mono.just(movement)));
     }
 
 }

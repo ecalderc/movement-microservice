@@ -2,7 +2,7 @@ spring:
   application:
     name: movement
   profiles:
-    active: prod
+    active: dev
   cloud:
     config:
       enabled: true
