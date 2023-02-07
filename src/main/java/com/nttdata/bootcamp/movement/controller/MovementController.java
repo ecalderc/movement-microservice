@@ -49,14 +49,14 @@ public class MovementController {
 
     //Update number of movements
     @CircuitBreaker(name = "movement", fallbackMethod = "fallBackGetMovement")
-    @PutMapping("/updateMovements/{movementNumber}")
+    @PutMapping("/updateMovements")
     public Mono<Movement> updateMovements(@RequestBody Movement dataMovement) {
         return movementService.updateMovements(dataMovement);
     }
 
     //Update commission
     @CircuitBreaker(name = "movement", fallbackMethod = "fallBackGetMovement")
-    @PostMapping(value = "/updateCommission")
+    @PutMapping(value = "/updateCommission")
     public Mono<Movement> updateCommission(@RequestBody Movement dataMovement) {
         return movementService.updateCommission(dataMovement);
     }
